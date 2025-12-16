@@ -1,1 +1,150 @@
-https://your-github-username.github.io
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>黄金掺料纯度计算器 - Web 版</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #d4af37;
+      margin-bottom: 25px;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #d4af37;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #b89e2e;
+    }
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+      font-size: 18px;
+    }
+    .status {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .max-allow {
+      margin-top: 15px;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🟡 黄金掺料纯度计算器</h1>
+
+  <div class="input-group">
+    <label for="weight1">原始黄金重量（克）</label>
+    <input type="number" id="weight1" value="1000" step="0.1">
+  </div>
+  <div class="input-group">
+    <label for="purity1">原始黄金纯度（%）</label>
+    <input type="number" id="purity1" value="99.95" step="0.01">
+  </div>
+  <div class="input-group">
+    <label for="weight2">掺入黄金重量（克）</label>
+    <input type="number" id="weight2" value="46.5" step="0.1">
+  </div>
+  <div class="input-group">
+    <label for="purity2">掺入黄金纯度（%）</label>
+    <input type="number" id="purity2" value="99.5" step="0.01">
+  </div>
+  <div class="input-group">
+    <label for="target">目标最低纯度（%）</label>
+    <input type="number" id="target" value="99.93" step="0.01">
+  </div>
+
+  <button onclick="calculate()">📊 计算纯度</button>
+
+  <div class="result" id="result" style="display:none;">
+    <div>混合后纯度：<span id="purityResult"></span>%</div>
+    <div class="status" id="statusResult"></div>
+    <div class="max-allow" id="maxAllowResult"></div>
+  </div>
+
+  <script>
+    function calculate() {
+      const w1 = parseFloat(document.getElementById('weight1').value) || 0;
+      const p1 = parseFloat(document.getElementById('purity1').value) || 0;
+      const w2 = parseFloat(document.getElementById('weight2').value) || 0;
+      const p2 = parseFloat(document.getElementById('purity2').value) || 0;
+      const target = parseFloat(document.getElementById('target').value) || 0;
+
+      const totalWeight = w1 + w2;
+      if (totalWeight <= 0) {
+        alert("总重量必须大于 0！");
+        return;
+      }
+
+      const totalGold = (w1 * p1 / 100) + (w2 * p2 / 100);
+      const finalPurity = (totalGold / totalWeight) * 100;
+
+      const isPass = finalPurity >= target;
+      const statusText = isPass ? "✅ 合格" : "❌ 超标！";
+      const statusClass = isPass ? "success" : "error";
+
+      // 显示结果
+      document.getElementById('purityResult').textContent = finalPurity.toFixed(4);
+      document.getElementById('statusResult').textContent = statusText;
+      document.getElementById('statusResult').className = "status " + statusClass;
+
+      // 计算最大可掺量（仅当 p2 < target < p1 时有效）
+      let maxAllowText = "";
+      if (p2 < target && p1 > target) {
+        const maxWeight = (w1 * (p1 - target)) / (target - p2);
+        maxAllowText = `💡 最多可掺入 ${maxWeight.toFixed(2)} 克（当前掺入 ${w2} 克）`;
+      } else if (p2 >= target) {
+        maxAllowText = "💡 掺料纯度 ≥ 目标，可无限掺入（理论上）";
+      } else {
+        maxAllowText = "⚠️ 无法达到目标纯度（原始料纯度不足）";
+      }
+
+      document.getElementById('maxAllowResult').textContent = maxAllowText;
+      document.getElementById('result').style.display = "block";
+    }
+
+    // 页面加载时自动计算一次
+    window.onload = calculate;
+  </script>
+</body>
+</html>
